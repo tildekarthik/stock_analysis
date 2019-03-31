@@ -1,9 +1,5 @@
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 
 #import matplotlib.pyplot as plt
 import pandas as pd
@@ -11,10 +7,10 @@ from nsepy import get_history
 from datetime import date
 from stock_lib import *
 
-co_name_list = read_yaml('../stocks.yaml')
+co_name_list = read_yaml('../configs/stocks.yaml')
 
 # indexes
-index_list = read_yaml('../indexes.yaml')
+index_list = read_yaml('../configs/indexes.yaml')
 
 
 # repeat the below code by changing the year to download the data
@@ -22,7 +18,7 @@ index_list = read_yaml('../indexes.yaml')
 year = 2019
 for stk in co_name_list:
     print('Processing:'+stk)
-    stk=stk.replace('NSE/','')
+    stk=stk.replace('','')
     st = date(year,1,1)
     end = date(year,12,31)
     df = get_history(symbol=stk, start=st, end=end)
