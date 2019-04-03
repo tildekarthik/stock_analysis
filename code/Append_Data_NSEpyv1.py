@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Spyder Editor
@@ -21,12 +22,12 @@ index_list = read_yaml('../indexes.yaml')
 
 year = 2019
 for stk in co_name_list:
-    print('Processing:'+stk)
-    stk=stk.replace('NSE/','')
-    st = date(year,1,1)
-    end = date(year,12,31)
+    print('Processing:' + stk)
+    stk = stk.replace('NSE/', '')
+    st = date(year, 1, 1)
+    end = date(year, 12, 31)
     df = get_history(symbol=stk, start=st, end=end)
-    df.to_hdf('nsepy_'+str(year)+'.hdf5',key=stk,mode='a',append=False,index=True)
+    df.to_hdf('nsepy_' + str(year) + '.hdf5',key=stk,mode='a',append=False,index=True)
 
 for stk in index_list:
     print('Processing:'+stk)
