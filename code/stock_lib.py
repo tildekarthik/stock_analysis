@@ -38,7 +38,7 @@ def stock_close_NSE(co_name_list,st_year,end_year):
         temp=[]
         for stk in co_name_list:
             print (yr,stk)
-            stk=stk.replace('NSE/','')
+            stk=stk.replace('','')
             st_df = pd.read_hdf('nsepy_'+str(yr)+'.hdf5',key=stk.replace(' ','_')).add_suffix(stk)['Close'+stk]
             st_df.index = pd.to_datetime(st_df.index)
             temp.append(st_df)
@@ -52,7 +52,7 @@ def stock_close_NSE(co_name_list,st_year,end_year):
 def stock_close_NSE_sql(stk_db_name, stk_list):
     concat_list = []
     for stk in stk_list:
-        stk=stk.replace('NSE/','')
+        stk=stk.replace('','')
         df = read_stk_data_sql(stk,stk_db_name)
         concat_list.append(df.loc[:,['Close']].rename(columns={'Close':'Close'+stk}))
     return pd.concat(concat_list,axis=1,verify_integrity=False)
