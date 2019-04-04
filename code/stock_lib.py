@@ -46,7 +46,8 @@ def update_stk_sql(stk,db_file):
         df = df.fillna(method='ffill').fillna('bfill')
         print("Processing : "+stk+" : "+str(df.index[-1]))
         df.to_sql(stk,conn,if_exists='replace')
-    except:
+    except Exception as e: 
+        print(e)
         print("Failed : "+stk)
     
     cur.close()
