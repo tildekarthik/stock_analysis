@@ -19,6 +19,8 @@ from keras.layers import Dropout
 
 
 import sqlite3 as lite
+from datetime import timedelta
+from nsepy import get_history
 
 def read_yaml(file_w_path):
     # import yaml file from directory and return the list   
@@ -26,6 +28,32 @@ def read_yaml(file_w_path):
     out = load(f_i)
     f_i.close()
     return out
+
+
+def update_stk_sql(stk,db_file):
+    conn = lite.connect(db_file)
+    cur = conn.cursor()
+    
+    try:
+        df = pd.read_sql_query('select * from '+stk,conn, index_col='Date')
+        st_date = pd.to_datetime(df.index[-1])+timedelta(days=1)
+        end_date = pd.to_datetime("today")
+        if stk!='NIFTY_50':
+            df_add = get_history(symbol=stk, start=st_date, end=end_date)
+        else:
+            df_add = get_history(symbol=stk, start=st_date, end=end_date,index=True)
+        df = pd.concat([df,df_add], axis=0)
+        df = df.fillna(method='ffill').fillna('bfill')
+        print("Processing : "+stk+" : "+str(df.index[-1]))
+        df.to_sql(stk,conn,if_exists='replace')
+    except:
+        print("Failed : "+stk)
+    
+    cur.close()
+    conn.close()
+    return df
+
+
 
 
 #from sklearn.ensemble import RandomForestRegressor
@@ -338,6 +366,7 @@ def candle_pattern_analyser(today,yest,day_bef):
     symbols['volume'] = today['Volume_MA']>.8
 
     return symbols
+
 
 
 
