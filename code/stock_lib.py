@@ -43,7 +43,7 @@ def update_stk_sql(stk,db_file):
         else:
             df_add = get_history(symbol=stk, start=st_date, end=end_date,index=True)
         df = pd.concat([df,df_add], axis=0)
-        df = df.fillna(method='ffill').fillna('bfill')
+        df = df.fillna(method='ffill').fillna(method='bfill')
         print("Processing : "+stk+" : "+str(df.index[-1]))
         df.to_sql(stk,conn,if_exists='replace')
     except Exception as e: 
