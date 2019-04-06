@@ -1,7 +1,7 @@
 import pandas as pd
 from stock_lib import read_stk_data, read_yaml,update_stk_sql
 # from datetime import timedelta
-import sqlite3 as lite
+#import sqlite3 as lite
 # from nsepy import get_history
 
 stk_list = read_yaml('../configs/stocks.yml')

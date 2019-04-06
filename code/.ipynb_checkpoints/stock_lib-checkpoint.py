@@ -36,9 +36,8 @@ def update_stk_sql(stk,db_file):
     
     try:
         df = pd.read_sql_query('select * from '+stk,conn, index_col='Date')
-        df[~(df=='bfill')].fillna(method='bfill')
         st_date = pd.to_datetime(df.index[-1])+timedelta(days=1)
-        end_date = pd.to_datetime("today")
+        end_date = pd.to_datetime("today")+timedelta(days=1)
         if stk!='NIFTY_50':
             df_add = get_history(symbol=stk, start=st_date, end=end_date)
         else:
