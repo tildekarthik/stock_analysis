@@ -1,13 +1,24 @@
 import pandas as pd
 from stock_lib import read_stk_data, read_yaml,update_stk_sql
 # from datetime import timedelta
-#import sqlite3 as lite
+# import sqlite3 as lite
 # from nsepy import get_history
 
 stk_list = read_yaml('../configs/stocks.yml')
 stk_list.append('NIFTY_50')
 
 db_file = "../data/stock_data.db"
+
+for stk in stk_list:
+    try:
+        stk=stk.replace('NSE/','')
+        df = update_stk_sql(stk,db_file)
+    except:
+        print("Failed to process : "+stk)
+
+
+
+
 # conn = lite.connect(db_file)
 # cur = conn.cursor()
 
@@ -37,6 +48,3 @@ db_file = "../data/stock_data.db"
 
 
 
-for stk in stk_list:
-    stk=stk.replace('NSE/','')
-    update_stk_sql(stk,db_file)

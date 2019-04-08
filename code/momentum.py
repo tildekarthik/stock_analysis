@@ -1,40 +1,31 @@
 import pandas as pd
+from stock_lib import read_yaml,read_stk_data_sql,momentum_back_test
 
 
-def read_stk_data(stk,start_year,end_year):
+
+db_name = '../data/stock_data.db'
+stk_list_f = '../configs/stocks.yml' 
+index_list_f = '../configs/indexes.yml'
+
+# Model parameters
+bt_days = 250
+sw_length = 1
+lw_length = 5
+
+
+stk_list = read_yaml(stk_list_f)
+
+out_l = []
+
+for stk in stk_list:
+    # Read the stk data
     l=[]
-    for i in range(start_year,end_year+1):
-        l.append(pd.read_hdf('nsepy_'+str(i)+'.hdf5',key=stk.replace(' ','_')))
-    df_read=pd.concat(l,axis=0)
-    return df_read
+    try:
+        df = read_stk_data_sql(stk,db_name)
+        l = momentum_back_test(df,bt_days,sw_length,lw_length)
+        l.insert(0,stk)
+        out_l.append(l)
+    except:
+        print("Failed:"+stk)
+pd.DataFrame(out_l,columns=['Stock','Average_Price','Profit','Signals','sw','lw','btdays']).to_csv('mom_output.csv')
 
-def cleanse_data(df_m,stk):
-    if 'Trades' in df_m.columns:
-        df_m.drop('Trades',axis=1,inplace=True)
-    df_m['Symbol']=stk
-    return df_m
-
-
-def mom_back_test(stk, st_year, end_year,   sw_days, lw_days):
-    
-    pass
-    
-
-df = read_stk_data('HINDUNILVR',2015,2019)
-
-LW_DAYS = 21
-SW_DAYS = 5
-
-df['LW_by_SW']=df['Close'].ewm(LW_DAYS).mean()/df['Close'].ewm(SW_DAYS).mean()
-df['LW_by_SW_yesterday']=df['LW_by_SW'].shift(1)
-df['Long_Short']=0
-
-df.loc[(df['LW_by_SW']>1) & (df['LW_by_SW_yesterday']<1),'Long_Short']=1
-df.loc[(df['LW_by_SW']<1) & (df['LW_by_SW_yesterday']>1),'Long_Short']=-1
-
-df_switch = df.loc[df['Long_Short']!=0,['Close','Long_Short']]
-df_switch['exit_price']=df_switch['Close'].shift(-1)
-df_switch['exit_date'] = df_switch.index
-df_switch['exit_date'] = df_switch['exit_date'].shift(-1)
-df_switch = df_switch[df_switch['Long_Short']==1]
-df_switch.to_csv('out.csv')

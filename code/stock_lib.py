@@ -18,9 +18,6 @@ from keras.layers import LSTM
 from keras.layers import Dropout
 
 
-import sqlite3 as lite
-from datetime import timedelta
-from nsepy import get_history
 
 def read_yaml(file_w_path):
     # import yaml file from directory and return the list   
@@ -31,6 +28,11 @@ def read_yaml(file_w_path):
 
 
 def update_stk_sql(stk,db_file):
+    # module specific imports
+    import sqlite3 as lite
+    from datetime import timedelta
+    from nsepy import get_history
+    
     conn = lite.connect(db_file)
     cur = conn.cursor()
     
@@ -44,11 +46,13 @@ def update_stk_sql(stk,db_file):
             df_add = get_history(symbol=stk, start=st_date, end=end_date,index=True)
         df = pd.concat([df,df_add], axis=0)
         df = df.fillna(method='ffill').fillna(method='bfill')
+        #Cleansing for Trades
+        if 'Trades' in df.columns:
+            df['Trades'] = df['Trades'].astype('float')
         print("Processing : "+stk+" : "+str(df.index[-1]))
         df.to_sql(stk,conn,if_exists='replace')
     except Exception as e: 
         print(e)
-        print("Failed : "+stk)
     
     cur.close()
     conn.close()
@@ -96,9 +100,11 @@ def read_stk_data(stk,start_year,end_year):
     return df_read
 
 def read_stk_data_sql(stk,db_name):
+    import sqlite3 as lite
     conn = lite.connect(db_name)
     cur = conn.cursor()
     df = pd.read_sql_query('select * from '+stk,conn, index_col='Date', parse_dates=True)
+    cur.close()
     conn.close()
     return df
 
@@ -369,5 +375,36 @@ def candle_pattern_analyser(today,yest,day_bef):
     return symbols
 
 
+def momentum_back_test(df,bt_days,sw,lw):
+    '''
+    Returns the 
+    1.average closing price, 
+    2.profit, 
+    3.number of full trades buy and sells
+    4.sw length
+    5.lw length
+    6.bt days
+    '''
+    df['sw_ewm']=df['Close'].ewm(sw).mean()
+    df['lw_ewm']=df['Close'].ewm(lw).mean()
+    # Check position today and yesterday
+    df['sw_above_lw']=True
+    df.loc[df['sw_ewm']<df['lw_ewm'],'sw_above_lw']=False
+    df['sw_above_lw_yesterday']=df['sw_above_lw'].shift(1)
+    # Classify Buy and Sell based on signal based on cross over
+    df['Buy']=0
+    df.loc[(df['sw_above_lw_yesterday']==False) & (df['sw_above_lw']==True),'Buy']=1
+    df.loc[(df['sw_above_lw_yesterday']==True) & (df['sw_above_lw']==False),'Buy']=-1
+    # Section to the number of bact test days
+    df=df.iloc[-bt_days:]
+    df_out = df.loc[df['Buy']!=0,:]
+    # Ensure that the start and end of the series is with 0 stocks
+    if df_out['Buy'][0]==-1:
+        df_out.drop(df_out.index[0],inplace=True)
+    if df_out['Buy'][-1]==1:
+        df_out.drop(df_out.index[-1],inplace=True)
+
+    df_out['cash_flow'] = df_out['Close']*df_out['Buy']*-1
+    return [df['Close'].mean(),df_out['cash_flow'].sum(),df_out.shape[0]/2,sw,lw,bt_days]    
 
 
