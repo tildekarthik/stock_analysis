@@ -43,8 +43,3 @@ for stk in stk_list:
 #     df = pd.concat([df,df_add], axis=0)
 #     df = df.fillna(method='ffill').fillna('bfill')
 #     return df
-
-
-
-
-

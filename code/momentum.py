@@ -8,9 +8,9 @@ stk_list_f = '../configs/stocks.yml'
 index_list_f = '../configs/indexes.yml'
 
 # Model parameters
-bt_days = 250
-sw_length = 1
-lw_length = 5
+bt_days = 750
+sw_length = 5
+lw_length = 9
 
 
 stk_list = read_yaml(stk_list_f)
@@ -27,5 +27,9 @@ for stk in stk_list:
         out_l.append(l)
     except:
         print("Failed:"+stk)
-pd.DataFrame(out_l,columns=['Stock','Average_Price','Profit','Signals','sw','lw','btdays']).to_csv('mom_output.csv')
 
+
+
+df_csv = pd.DataFrame(out_l,columns=['Stock','Average_Price','Profit','Signals','sw','lw','btdays'])
+df_csv['Profit_Pct']=df_csv['Profit']/df_csv['Average_Price']
+df_csv.sort_values(by='Profit_Pct',ascending=False).to_csv('mom_output.csv')
