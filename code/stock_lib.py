@@ -32,7 +32,7 @@ def update_stk_sql(stk,db_file):
     import sqlite3 as lite
     from datetime import timedelta
     from nsepy import get_history
-    
+
     conn = lite.connect(db_file)
     cur = conn.cursor()
     
