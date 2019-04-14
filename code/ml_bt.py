@@ -10,49 +10,47 @@
     -- Change the estimators or ml parameters
     -- Features to engineer incl External parameters for prediction
 """
-from stock_lib import read_stk_data_sql, X_y, back_test
-
-def ml_selector(selector, estimators):
-    if selector == 'GBR':
-        from sklearn.ensemble import GradientBoostingRegressor
-        mod = GradientBoostingRegressor(n_estimators=estimators)
-    elif selector == 'RFR':
-        from sklearn.ensemble import RandomForestRegressor
-        mod = RandomForestRegressor(n_estimators=estimators)
-    # mod = SVR(kernel='rbf', gamma=10000, C=10000)
-    return mod
-
-
-
+from stock_lib import read_stk_data_sql, X_y,read_yaml
+from stock_lib import back_test,ml_selector
+from stock_lib import post_process_bt
+import pandas as pd
 
 # Grid parameters
 col_predict='Close'
-F_DAYS = 1
-estimators = 100
-ml='GBR'
+F_DAYS = 10
+estimators = 250
+ml='RFR'
 
-# input output parameters
-f_out_name = 'stocks' + str(F_DAYS) + '.csv'
-stk = 'HDFC'
-db_file = "../data/stock_data.db"
+# Back test parameter
 bt_days = 250
 
+# input output parameters
+db_file = "../data/stock_data.db"
+f_out_name = 'stocks' + str(F_DAYS) + '.csv'
+stk_list = read_yaml('../configs/stocks_ml.yml')
+out_l=[]
 
-# read the stock data
-df = read_stk_data_sql(stk,db_file)
-df['Symbol'] = stk
-# prepare the features
+for stk in stk_list:
+    # read the stock data
+    df = read_stk_data_sql(stk,db_file)
+    df['Symbol'] = stk
+    # prepare the features
 
-# run bact test
-print("Processing:" + stk)
-df_main = df
-out = df_main[['Symbol', col_predict]].copy()
-out['y'] = out[col_predict].shift(-F_DAYS)
+    # run bact test
+    print("Processing:" + stk)
+    df_main = df
+    out = df_main[['Symbol', col_predict]].copy()
+    out['y'] = out[col_predict].shift(-F_DAYS)
 
-mod = ml_selector(ml,estimators)
+    mod = ml_selector(ml,estimators)
 
-out = back_test(bt_days, df_main, F_DAYS, col_predict, mod, out)
-out_l.append(out.dropna(axis=0))
+    out = back_test(bt_days, df_main, F_DAYS, col_predict, mod, out)
+    out_f = post_process_bt(out)
+    out_l.append(out_f)
+
+
+out_f = pd.concat(out_l, axis=0)
+out_f.to_csv(f_out_name)
 
 
 

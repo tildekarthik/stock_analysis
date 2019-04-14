@@ -61,7 +61,6 @@ def update_stk_sql(stk,db_file):
 
 
 
-#from sklearn.ensemble import RandomForestRegressor
 def stock_close_NSE(co_name_list,st_year,end_year):
     '''
     returns close prices of all the stocks in a pandas dataframe for the period specified
@@ -177,6 +176,16 @@ def X_y(df_X,col_predict,future_days, sample_length=0):
     X_train=mf.drop(['y'],axis=1)[-sample_length:]
     return X_train,y_train,X_test
 
+def post_process_bt(out):
+    out = out.dropna(axis=0)
+    out['pred_chg']=out['pred']-out['Close']
+    out['act_chg']=out['y']-out['Close']
+    out['correct']=-1
+    out.loc[(out['act_chg']/out['pred_chg'])>0,'correct']=1
+    out['profit']=abs(out['act_chg'])*out['correct']
+    return out
+
+
 
 def train_pred(X_tr,y_tr,X_te,fn):
     fn.fit(X_tr,y_tr.values.ravel())
@@ -210,6 +219,19 @@ def train_pred_AI(X_train_scaled,y_train_scaled,X_test_scaled,BATCH_SIZE,EPOCHS)
     pred_test_scaled=regression.predict(X_test_scaled)
 
     return pred_test_scaled
+
+def ml_selector(selector, estimators):
+    if selector == 'GBR':
+        from sklearn.ensemble import GradientBoostingRegressor
+        mod = GradientBoostingRegressor(n_estimators=estimators)
+    elif selector == 'RFR':
+        from sklearn.ensemble import RandomForestRegressor
+        mod = RandomForestRegressor(n_estimators=estimators)
+    # mod = SVR(kernel='rbf', gamma=10000, C=10000)
+    return mod
+
+
+
 
 
 
