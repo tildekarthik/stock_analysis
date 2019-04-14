@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-stk = 'HDFC'
-
-stk = 'HDFC'
-
-
 """
 
 - Read stock data
@@ -15,10 +10,49 @@ stk = 'HDFC'
     -- Change the estimators or ml parameters
     -- Features to engineer incl External parameters for prediction
 """
+from stock_lib import read_stk_data_sql, X_y, back_test
+
+def ml_selector(selector, estimators):
+    if selector == 'GBR':
+        from sklearn.ensemble import GradientBoostingRegressor
+        mod = GradientBoostingRegressor(n_estimators=estimators)
+    elif selector == 'RFR':
+        from sklearn.ensemble import RandomForestRegressor
+        mod = RandomForestRegressor(n_estimators=estimators)
+    # mod = SVR(kernel='rbf', gamma=10000, C=10000)
+    return mod
 
 
+
+
+# Grid parameters
+col_predict='Close'
+F_DAYS = 1
+estimators = 100
+ml='GBR'
+
+# input output parameters
+f_out_name = 'stocks' + str(F_DAYS) + '.csv'
 stk = 'HDFC'
 db_file = "../data/stock_data.db"
+bt_days = 250
+
+
+# read the stock data
+df = read_stk_data_sql(stk,db_file)
+df['Symbol'] = stk
+# prepare the features
+
+# run bact test
+print("Processing:" + stk)
+df_main = df
+out = df_main[['Symbol', col_predict]].copy()
+out['y'] = out[col_predict].shift(-F_DAYS)
+
+mod = ml_selector(ml,estimators)
+
+out = back_test(bt_days, df_main, F_DAYS, col_predict, mod, out)
+out_l.append(out.dropna(axis=0))
 
 
 
@@ -31,8 +65,7 @@ db_file = "../data/stock_data.db"
 # @author: karthik
 # """
 # import pandas as pd
-# # from sklearn.ensemble import GradientBoostingRegressor
-# from sklearn.ensemble import RandomForestRegressor
+
 # # from sklearn.svm import SVR
 # from stock_lib import read_stk_data_sql
 
