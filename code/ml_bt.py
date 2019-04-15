@@ -7,13 +7,18 @@
 - Cut a section for training and predict at the end of it
 - Iterate the parameters (Grid it)
     -- Days of prediction
+   [Started: 10 days]
     -- Change the estimators or ml parameters
+    [no features: 50% (max 1 at 57% results]
     -- Features to engineer incl External parameters for prediction
 """
+import pandas as pd
+
 from stock_lib import read_stk_data_sql, X_y,read_yaml
+from stock_lib import prepare_data
 from stock_lib import back_test,ml_selector
 from stock_lib import post_process_bt
-import pandas as pd
+
 
 # Grid parameters
 col_predict='Close'
@@ -35,6 +40,7 @@ for stk in stk_list:
     df = read_stk_data_sql(stk,db_file)
     df['Symbol'] = stk
     # prepare the features
+    df = prepare_data(df)
 
     # run bact test
     print("Processing:" + stk)

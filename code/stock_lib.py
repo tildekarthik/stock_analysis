@@ -115,17 +115,19 @@ def cleanse_data(df_m,stk):
 
 
 def prepare_data(df):
-    shifts=[1,2,3,5,6,7,8,9,10,20,40,60,100,240]
-    df['close-open']=df['Close']-df['Open']
-    df['high-close']=df['High']-df['Close']
-    df['close-low']=df['Close']-df['Low']
-    df['open-low']=df['Open']-df['Low']
-    df['high-open']=df['High']-df['Open']
-    col_shift = ['Open','Close','close-open']
+    # shifts=[1,2,3,5,6,7,8,9,10,20,40,60,100,240]
+    shifts=[5,9,25,50,100]
+    # df['close-open']=df['Close']-df['Open']
+    # df['high-close']=df['High']-df['Close']
+    # df['close-low']=df['Close']-df['Low']
+    # df['open-low']=df['Open']-df['Low']
+    # df['high-open']=df['High']-df['Open']
+    # col_shift = ['Open','Close','close-open']
+    col_shift = ['Close']
     for i in shifts:
         df = pd.concat([df, df[col_shift].shift(i).add_prefix('prev_'+str(i))],axis=1)
         # below has been added in v2 - needs to be back tested 
-        df = pd.concat([df, df[col_shift].diff(i).add_prefix('diff_'+str(i))],axis=1)
+        # df = pd.concat([df, df[col_shift].diff(i).add_prefix('diff_'+str(i))],axis=1)
         df = pd.concat([df, df[col_shift].ewm(i).mean().add_prefix('rolling_'+str(i))],axis=1)
     return(df)
 
