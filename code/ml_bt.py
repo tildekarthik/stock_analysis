@@ -9,7 +9,9 @@
     -- Days of prediction
    [Started: 10 days]
     -- Change the estimators or ml parameters
-    [no features: 50% (max 1 at 57% results]
+    [no features: 50% (max 1 at 57% results - Low J]
+    [with ewm poorer results cost function vey high]
+
     -- Features to engineer incl External parameters for prediction
 """
 import pandas as pd

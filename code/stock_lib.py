@@ -127,8 +127,8 @@ def prepare_data(df):
     for i in shifts:
         df = pd.concat([df, df[col_shift].shift(i).add_prefix('prev_'+str(i))],axis=1)
         # below has been added in v2 - needs to be back tested 
-        # df = pd.concat([df, df[col_shift].diff(i).add_prefix('diff_'+str(i))],axis=1)
-        df = pd.concat([df, df[col_shift].ewm(i).mean().add_prefix('rolling_'+str(i))],axis=1)
+        df = pd.concat([df, df[col_shift].diff(i).add_prefix('diff_'+str(i))],axis=1)
+        # df = pd.concat([df, df[col_shift].ewm(i).mean().add_prefix('rolling_'+str(i))],axis=1)
     return(df)
 
 def merge_nse_quandl(df1):
